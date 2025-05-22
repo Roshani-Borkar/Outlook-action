@@ -14,12 +14,6 @@ const clientSecret = process.env.CLIENT_SECRET;
 const siteId = process.env.SITE_ID;
 const listId = process.env.LIST_ID;
 
-// Validate required environment variables
-if (!tenantId || !clientId || !clientSecret || !siteId || !listId) {
-  console.error("❌ Missing one or more required environment variables.");
-  process.exit(1);
-}
-
 // Health check endpoint
 app.get("/", (req, res) => {
   res.send("✅ Outlook Adaptive Card handler is running!");
@@ -42,6 +36,14 @@ app.post("/response", async (req, res) => {
   try {
     // Get access token from your auth module
     const token = await getAccessToken(tenantId, clientId, clientSecret);
+console.log(token);
+    if (!token) {
+      console.error("❌ Failed to get access token");
+      return res.status(500).send({
+        type: "MessageCard",
+        text: `❌ Failed to get access token`
+      });
+    }
 
     const url = `https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items/${ID}/fields`;
 
