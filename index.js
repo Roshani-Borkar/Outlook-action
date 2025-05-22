@@ -85,3 +85,7 @@ app.post("/response", async (req, res) => {
     });
   }
 });
+app.use((req, res) => {
+  res.status(404).send("Route not found");
+});
+
