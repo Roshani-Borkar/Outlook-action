@@ -2,16 +2,12 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const axios = require("axios");
 const getAccessToken = require("./auth");
-
-// Load .env only if NOT in production
-if (process.env.NODE_ENV !== "production") {
-  require("dotenv").config();
-}
+require("dotenv").config();
 
 const app = express();
 app.use(bodyParser.json());
 
-// Load environment variables
+// Load environment variables (Render sets these automatically)
 const tenantId = process.env.TENANT_ID;
 const clientId = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
@@ -24,12 +20,12 @@ if (!tenantId || !clientId || !clientSecret || !siteId || !listId) {
   process.exit(1);
 }
 
-// Root endpoint (health check)
+// Health check endpoint
 app.get("/", (req, res) => {
   res.send("✅ Outlook Adaptive Card handler is running!");
 });
 
-// Main endpoint to receive responses
+// Endpoint to receive Adaptive Card responses
 app.post("/response", async (req, res) => {
   const { ApprovalStatus, Comments, ID } = req.body;
 
@@ -44,7 +40,9 @@ app.post("/response", async (req, res) => {
   }
 
   try {
+    // Get access token from your auth module
     const token = await getAccessToken(tenantId, clientId, clientSecret);
+
     const url = `https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items/${ID}/fields`;
 
     const updatePayload = {
@@ -70,22 +68,16 @@ app.post("/response", async (req, res) => {
     });
 
   } catch (error) {
-    // Log detailed error info
-    console.error("❌ Error updating SharePoint:", error.message);
-    if (error.response) {
-      console.error("Response data:", JSON.stringify(error.response.data, null, 2));
-      console.error("Response status:", error.response.status);
-      console.error("Response headers:", error.response.headers);
-    }
-    console.error("Stack trace:", error.stack);
-
+    console.error("❌ Error updating SharePoint:", error.response?.data || error.message);
     res.status(500).send({
       type: "MessageCard",
       text: `❌ Error updating SharePoint: ${error.response?.data?.error?.message || error.message}`
     });
   }
 });
-app.use((req, res) => {
-  res.status(404).send("Route not found");
-});
 
+// Listen on the port provided by Render or fallback to 3000 locally
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`✅ Server is running on port ${PORT}`);
+});
