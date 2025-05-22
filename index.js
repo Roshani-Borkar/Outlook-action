@@ -44,9 +44,7 @@ app.post("/response", async (req, res) => {
   }
 
   try {
-    // Get access token
     const token = await getAccessToken(tenantId, clientId, clientSecret);
-
     const url = `https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items/${ID}/fields`;
 
     const updatePayload = {
@@ -72,16 +70,18 @@ app.post("/response", async (req, res) => {
     });
 
   } catch (error) {
-    console.error("❌ Error updating SharePoint:", error.response?.data || error.message);
+    // Log detailed error info
+    console.error("❌ Error updating SharePoint:", error.message);
+    if (error.response) {
+      console.error("Response data:", JSON.stringify(error.response.data, null, 2));
+      console.error("Response status:", error.response.status);
+      console.error("Response headers:", error.response.headers);
+    }
+    console.error("Stack trace:", error.stack);
+
     res.status(500).send({
       type: "MessageCard",
       text: `❌ Error updating SharePoint: ${error.response?.data?.error?.message || error.message}`
     });
   }
-});
-
-// Start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`✅ Server is running on http://localhost:${PORT}`);
 });
