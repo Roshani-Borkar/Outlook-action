@@ -48,8 +48,8 @@ console.log(token);
     const url = `https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items/${ID}/fields`;
 
     const updatePayload = {
-      ApprovalStatus: ApprovalStatus,
-      Comments: Comments || ""
+      ApprovalStatus: "ApprovalStatus",
+      Comments: "Comments" || ""
     };
 
     console.log("📡 PATCH request to:", url);
