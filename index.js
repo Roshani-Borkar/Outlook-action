@@ -2,7 +2,11 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const axios = require("axios");
 const getAccessToken = require("./auth");
-require("dotenv").config();
+
+// Load .env only if NOT in production
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
 
 const app = express();
 app.use(bodyParser.json());
@@ -47,7 +51,7 @@ app.post("/response", async (req, res) => {
 
     const updatePayload = {
       ApprovalStatus: ApprovalStatus,
-      Comments: Commen || ""
+      Comments: Comments || ""
     };
 
     console.log("📡 PATCH request to:", url);
