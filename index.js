@@ -28,6 +28,7 @@ app.get("/", (req, res) => {
 
 // Endpoint to receive Adaptive Card responses (from Outlook emails)
 app.post("/response", async (req, res) => {
+  
   const { ApprovalStatus, Comments, ID } = req.body;
 
   console.log("🔄 Received Adaptive Card response payload:", req.body);
@@ -41,8 +42,17 @@ app.post("/response", async (req, res) => {
   }
 
   try {
+    console.log("TENANT_ID:", process.env.TENANT_ID);
+    console.log("CLIENT_ID:", process.env.CLIENT_ID);
+    console.log("CLIENT_SECRET:", process.env.CLIENT_SECRET ? "set" : "MISSING");
+
+    const token = await getAccessToken(
+      process.env.TENANT_ID,
+      process.env.CLIENT_ID,
+      process.env.CLIENT_SECRET
+    );
     // Get access token from your auth module
-    const token = await getAccessToken(); // Make sure this function works as expected
+    //const token = await getAccessToken(); // Make sure this function works as expected
     const url = `https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items/${ID}/fields`;
 
     const updatePayload = {
