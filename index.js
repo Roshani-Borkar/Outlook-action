@@ -35,17 +35,7 @@ app.post("/response", async (req, res) => {
 
   try {
     // Get access token from your auth module
-    const token = await getAccessToken(tenantId, clientId, clientSecret);
-console.log(token);
-    if (!token) {
-      console.error("❌ Failed to get access token");
-      return res.status(500).send({
-        type: "MessageCard",
-        text: `❌ Failed to get access token`
-      });
-    }
-
-    const url = `https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items/${ID}/fields`;
+        const url = `https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items/${ID}/fields`;
 
     const updatePayload = {
       ApprovalStatus: ApprovalStatus,
@@ -78,6 +68,34 @@ console.log(token);
   }
 });
 
+// Teams card endpoint
+app.post("/send-teams-card", async (req, res) => {
+  const { webhookUrl, card } = req.body;
+  if (!webhookUrl || !card) {
+    return res.status(400).send("Missing webhookUrl or card");
+  }
+  try {
+    const teamsPayload = {
+      type: "message",
+      attachments: [
+        {
+          contentType: "application/vnd.microsoft.card.adaptive",
+          content: card
+        }
+      ]
+    };
+    const response = await axios.post(webhookUrl, teamsPayload, {
+      headers: { "Content-Type": "application/json" }
+    });
+    console.log("✅ Card sent to Teams:", response.status);
+    res.status(200).send("Card sent to Teams!");
+  } catch (error) {
+    console.error("❌ Error sending card to Teams:", error.response?.data || error.message);
+    res.status(500).send(
+      error.response?.data?.error?.message || error.message || "Failed to send to Teams"
+    );
+  }
+});
 // Listen on the port provided by Render or fallback to 3000 locally
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
