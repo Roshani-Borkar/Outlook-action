@@ -69,11 +69,15 @@ app.post("/response", async (req, res) => {
 });
 
 // Teams card endpoint
+
 app.post("/send-teams-card", async (req, res) => {
-  const { webhookUrl, card } = req.body;
-  if (!webhookUrl || !card) {
-    return res.status(400).send("Missing webhookUrl or card");
+  const webhookUrl = process.env.TEAMS_WEBHOOK_URL; // or req.body.webhookUrl
+  const { card } = req.body;
+
+  if (!card) {
+    return res.status(400).send("Missing card");
   }
+
   try {
     const teamsPayload = {
       type: "message",
@@ -87,15 +91,14 @@ app.post("/send-teams-card", async (req, res) => {
     const response = await axios.post(webhookUrl, teamsPayload, {
       headers: { "Content-Type": "application/json" }
     });
-    console.log("✅ Card sent to Teams:", response.status);
     res.status(200).send("Card sent to Teams!");
   } catch (error) {
-    console.error("❌ Error sending card to Teams:", error.response?.data || error.message);
     res.status(500).send(
       error.response?.data?.error?.message || error.message || "Failed to send to Teams"
     );
   }
 });
+
 // Listen on the port provided by Render or fallback to 3000 locally
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
