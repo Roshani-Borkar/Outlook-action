@@ -47,10 +47,10 @@ app.post("/response", async (req, res) => {
     console.log("CLIENT_SECRET:", process.env.CLIENT_SECRET ? "set" : "MISSING");
 
     const token = await getAccessToken(
-      process.env.TENANT_ID,
-      process.env.CLIENT_ID,
-      process.env.CLIENT_SECRET
-    );
+  tenantId,
+  clientId,
+  clientSecret
+);
     // Get access token from your auth module
     //const token = await getAccessToken(); // Make sure this function works as expected
     const url = `https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items/${ID}/fields`;
